@@ -7,6 +7,10 @@ const startServer = async () => {
   App(app);
   Database();
 
+  app.get("healthcheck", (req, res) => {
+    res.json({ msg: "OK" });
+  });
+
   app.listen(PORT, () => {
     console.log(`We are running at ${PORT}`);
   });
