@@ -15,12 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ExpressApp_1 = __importDefault(require("./services/ExpressApp"));
 const express_1 = __importDefault(require("express"));
 const Database_1 = __importDefault(require("./services/Database"));
+const config_1 = require("./config");
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     const app = (0, express_1.default)();
     (0, ExpressApp_1.default)(app);
     (0, Database_1.default)();
-    app.listen(8000, () => {
-        console.log("We are running at 8000");
+    app.listen(config_1.PORT, () => {
+        console.log(`We are running at ${config_1.PORT}`);
     });
 });
 startServer();
