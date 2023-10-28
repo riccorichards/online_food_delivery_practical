@@ -10,8 +10,8 @@
     "postinstall": "npm run build"
   },
   "engines": {
-    "node": "18.15.0",
-    "npm": "9.6.6"
+    "node": "18",
+    "npm": "latest"
   },
   "author": "Riccorichards",
   "license": "ISC",
