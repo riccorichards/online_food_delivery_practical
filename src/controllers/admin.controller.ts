@@ -3,6 +3,8 @@ import { CreateVendorInput } from "../dto/Vendor.dto";
 import { Vendor } from "../models";
 import { passwordGenerator, saltGenerator } from "../utility";
 import { SALT_NUM } from "../config";
+import { Transaction } from "../models/transaction";
+import { DeliveryUser } from "../models/delivery";
 
 export const FindVendor = async (id: string | undefined, email?: string) => {
   if (email) {
@@ -46,6 +48,8 @@ export const createVendor = async (req: Request, res: Response) => {
     coverImage: [],
     rating: 0,
     foods: [],
+    lat: 0,
+    lng: 0,
   });
   return res.json(newVendor);
 };
@@ -66,4 +70,45 @@ export const getVendorById = async (req: Request, res: Response) => {
   if (vendor !== null) return res.status(200).json(vendor);
 
   return res.status(404).json({ msg: "vendor's data not available" });
+};
+
+export const getTxns = async (req: Request, res: Response) => {
+  const transactions = await Transaction.find();
+
+  if (transactions.length > 0) return res.status(200).json(transactions);
+
+  return res.status(404).json({ msg: "txns not available" });
+};
+
+export const getTxnsById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const txn = await Transaction.findById(id);
+  if (txn !== null) return res.status(200).json(txn);
+
+  return res.status(404).json({ msg: "txn not available" });
+};
+
+export const verifyDeliveryUser = async (req: Request, res: Response) => {
+  const { _id, status } = req.body;
+
+  if (_id) {
+    const profile = await DeliveryUser.findById(_id);
+
+    if (profile) {
+      profile.verified = status;
+      const savedProfle = await profile.save();
+
+      return res.status(200).json(savedProfle);
+    }
+  }
+
+  return res.status(400).json({ msg: "Unable to verify Devlivery user" });
+};
+
+export const getDeliveryUsers = async (req: Request, res: Response) => {
+  const deliveryUSer = await DeliveryUser.find();
+
+  if (deliveryUSer) return res.status(200).json(deliveryUSer);
+  return res.status(400).json({ msg: "Unable to get Devlivery users" });
 };

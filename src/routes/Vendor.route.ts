@@ -1,8 +1,14 @@
 import express from "express";
 import {
   addFood,
+  createOffer,
+  getCurrentOrders,
   getFoods,
+  getOffers,
+  getOrdersDetails,
   getVendorProfile,
+  processOrders,
+  updateOffer,
   updateVendomCoverImage,
   updateVendorProfile,
   updateVendorService,
@@ -34,5 +40,13 @@ router.patch("/coverImage", images, updateVendomCoverImage);
 
 router.post("/food", images, addFood);
 router.get("/foods", getFoods);
+
+router.get("/orders", getCurrentOrders);
+router.put("/order/:id/process", processOrders);
+router.get("/orders/:orderId", getOrdersDetails);
+
+router.get("/offers", getOffers);
+router.post("/offer", createOffer);
+router.put("/offer/:id", updateOffer);
 
 export { router as VendorRoute };
