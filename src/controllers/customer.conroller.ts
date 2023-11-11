@@ -56,6 +56,7 @@ export const customerSignUp = async (req: Request, res: Response) => {
     lastName: "",
     address: "",
     verified: false,
+    status: "Customer",
     lat: 0,
     lng: 0,
     orders: [],
@@ -65,13 +66,13 @@ export const customerSignUp = async (req: Request, res: Response) => {
     await requestOTP(otp, phone);
     const signature = generateSignature({
       _id: result._id,
-      email: result.email,
       verified: result.verified,
     });
+
     return res.status(201).json({
       signature: signature,
       verfied: result.verified,
-      email: result.email,
+      status: result.status,
       _id: result._id,
     });
   }
@@ -94,23 +95,23 @@ export const customerLogin = async (req: Request, res: Response) => {
     if (validation) {
       const signature = generateSignature({
         _id: customer._id,
-        email: customer.email,
         verified: customer.verified,
       });
 
       return res.status(201).json({
         signature: signature,
-        email: customer.email,
         verified: customer.verified,
+        status: customer.status,
+        _id: customer._id,
       });
     }
   }
   return res.status(400).json({ err: "Error with login" });
 };
+
 export const customerVerify = async (req: Request, res: Response) => {
   const { otp } = req.body;
   const customer = req.user;
-  console.log({ otp, customer });
   if (customer) {
     const profile = await Customer.findById(customer._id);
     if (profile) {
@@ -119,15 +120,14 @@ export const customerVerify = async (req: Request, res: Response) => {
         const updateCustomerResponce = await profile.save();
         const signature = generateSignature({
           _id: updateCustomerResponce._id,
-          email: updateCustomerResponce.email,
           verified: updateCustomerResponce.verified,
         });
 
         return res.status(201).json({
           signature: signature,
-          verfied: updateCustomerResponce.verified,
-          email: updateCustomerResponce.email,
+          verified: updateCustomerResponce.verified,
           _id: updateCustomerResponce._id,
+          status: updateCustomerResponce.status,
         });
       }
     }
@@ -154,6 +154,7 @@ export const requestOtp = async (req: Request, res: Response) => {
   }
   return res.status(400).json({ err: "Error with Request OTp" });
 };
+
 export const getCustomerProfile = async (req: Request, res: Response) => {
   const customer = req.user;
   if (customer) {
@@ -266,6 +267,10 @@ export const createOrder = async (req: Request, res: Response) => {
   if (customer) {
     const { status, currentTransaction } = await validateTransaction(txnId);
 
+    if (!status) {
+      return res.status(404).json({ message: "Error while Creating Order!" });
+    }
+
     const orderId = `${Math.floor(Math.random() * 89999) + 1000}`;
 
     const profile = await Customer.findById(customer._id);
@@ -284,7 +289,7 @@ export const createOrder = async (req: Request, res: Response) => {
       items.map(({ _id, unit }) => {
         if (food._id == _id) {
           vendorId = food.vendorId;
-          netAmount += food.price * unit;
+          netAmount += parseFloat(food.price) * unit;
           cartItems.push({ food, unit });
         }
       });
@@ -328,8 +333,6 @@ export const getOrders = async (req: Request, res: Response) => {
     const profile = await (
       await Customer.findById(customer._id)
     ).populate("orders");
-
-    console.log({ profile, customer });
 
     if (profile) {
       return res.status(200).json(profile.orders);

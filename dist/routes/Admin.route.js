@@ -11,4 +11,8 @@ exports.AdminRouter = router;
 router.post("/vendor", controllers_1.createVendor);
 router.get("/vendors", controllers_1.getVendors);
 router.get("/vendor/:id", controllers_1.getVendorById);
+router.get("/txns", controllers_1.getTxns);
+router.get("/txn/:id", controllers_1.getTxnsById);
+router.put("/delivery/verify", controllers_1.verifyDeliveryUser);
+router.get("/deliverys", controllers_1.getDeliveryUsers);
 //# sourceMappingURL=Admin.route.js.map

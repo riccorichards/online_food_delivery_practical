@@ -38,18 +38,18 @@ const CustomerSchema = new mongoose_1.Schema({
     otp_expiry: { type: Date },
     lat: { type: Number },
     lng: { type: Number },
-    //cart: [
-    //  {
-    //    food: { type: Schema.Types.ObjectId, ref: "food", require: true },
-    //    unit: { type: Number, require: true },
-    //  },
-    //],
-    //orders: [
-    //  {
-    //    type: Schema.Types.ObjectId,
-    //    ref: "order",
-    //  },
-    //],
+    cart: [
+        {
+            food: { type: mongoose_1.Schema.Types.ObjectId, ref: "food", require: true },
+            unit: { type: Number, require: true },
+        },
+    ],
+    orders: [
+        {
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: "orders",
+        },
+    ],
 }, {
     toJSON: {
         transform(doc, ret) {

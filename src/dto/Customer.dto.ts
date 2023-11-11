@@ -4,7 +4,7 @@ export class CreateCustomerInputs {
   @IsEmail()
   email: string;
 
-  @Length(7, 12)
+  @Length(7, 15)
   phone: string;
 
   @Length(7, 12)
@@ -32,7 +32,6 @@ export class EditCustomerProfileInput {
 
 export interface CustomerPayload {
   _id: string;
-  email: string;
   verified: boolean;
 }
 
@@ -41,6 +40,7 @@ export class CartItem {
 
   unit: number;
 }
+
 export class OrderInput {
   txnId: string;
 

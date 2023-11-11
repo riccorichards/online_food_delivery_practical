@@ -10,12 +10,12 @@ import {
 
 const router = express.Router();
 
+/*-------------------------- -Top Restaurant---------------------------------- */
+router.get("/top-restaurant", getTopRestaurant);
 /*-------------------------- Food availability----------------------------------- */
 router.get("/:pincode", getFoodAvailability);
-/*-------------------------- -Top Restaurant---------------------------------- */
-router.get("/top-restoraunt/:pincode", getTopRestaurant);
 /*-------------------------- Foods Available in 30 min----------------------------------- */
-router.get("/foods-in-30-min/:pincode", getFoodIn30Min);
+router.get("/foods-in-30-min/", getFoodIn30Min);
 /*-------------------------- Search Foods----------------------------------- */
 router.get("/search/:pincode", searchFoods);
 

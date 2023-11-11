@@ -16,4 +16,12 @@ router.patch("/verify", controllers_1.customerVerify);
 router.get("/otp", controllers_1.requestOtp);
 router.get("/profile", controllers_1.getCustomerProfile);
 router.patch("/profile", controllers_1.editCustomerProfile);
+router.post("/create-order", controllers_1.createOrder);
+router.get("/orders", controllers_1.getOrders);
+router.get("/order/:orderId", controllers_1.getOrderById);
+router.post("/cart", controllers_1.addToCart);
+router.get("/cart", controllers_1.getCart);
+router.delete("/cart", controllers_1.deleteCart);
+router.get("/offer/verify/:id", controllers_1.verifyOffer);
+router.post("/create-payment", controllers_1.createPayment);
 //# sourceMappingURL=Customer.router.js.map

@@ -54,7 +54,6 @@ export const deliverySignUp = async (req: Request, res: Response) => {
   if (result) {
     const signature = generateSignature({
       _id: result._id,
-      email: result.email,
       verified: result.verified,
     });
     return res.status(201).json({
@@ -83,7 +82,6 @@ export const deliveryLogin = async (req: Request, res: Response) => {
     if (validation) {
       const signature = generateSignature({
         _id: deliveryUser._id,
-        email: deliveryUser.email,
         verified: deliveryUser.verified,
       });
 

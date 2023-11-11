@@ -24,6 +24,8 @@ export const createVendor = async (req: Request, res: Response) => {
     email,
     phone,
     foodType,
+    lat,
+    lng,
   } = <CreateVendorInput>req.body;
 
   const existingVendor = Boolean(await FindVendor("", email));
@@ -42,14 +44,15 @@ export const createVendor = async (req: Request, res: Response) => {
     address,
     email,
     phone,
+    status: "Vendor",
     salt: salt,
-    foodType,
+    foodType: foodType.split(", "),
     serviceAvailable: false,
     coverImage: [],
-    rating: 0,
+    rating: 1520,
     foods: [],
-    lat: 0,
-    lng: 0,
+    lat,
+    lng,
   });
   return res.json(newVendor);
 };

@@ -9,10 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFoods = exports.addFood = exports.updateVendorService = exports.updateVendomCoverImage = exports.updateVendorProfile = exports.getVendorProfile = exports.vendorLogin = void 0;
+exports.updateOffer = exports.createOffer = exports.getOffers = exports.processOrders = exports.getOrdersDetails = exports.getCurrentOrders = exports.getFoods = exports.addFood = exports.updateVendorService = exports.updateVendomCoverImage = exports.updateVendorProfile = exports.getVendorProfile = exports.vendorLogin = void 0;
 const admin_controller_1 = require("./admin.controller");
 const utility_1 = require("../utility");
 const models_1 = require("../models");
+const Order_1 = require("../models/Order");
+const Offer_1 = require("../models/Offer");
 const vendorLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     const existingVendo = yield (0, admin_controller_1.FindVendor)("", email);
@@ -89,10 +91,15 @@ const updateVendomCoverImage = (req, res) => __awaiter(void 0, void 0, void 0, f
 exports.updateVendomCoverImage = updateVendomCoverImage;
 const updateVendorService = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
+    const { lat, lng } = req.body;
     if (user) {
         const existingVendo = yield (0, admin_controller_1.FindVendor)(user._id);
         if (existingVendo !== null) {
             existingVendo.serviceAvailable = !existingVendo.serviceAvailable;
+            if (lat && lng) {
+                existingVendo.lat = lat;
+                existingVendo.lng = lng;
+            }
             const savedResult = yield existingVendo.save();
             return res.json(savedResult);
         }
@@ -143,4 +150,127 @@ const getFoods = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.json({ message: "Foods not found!" });
 });
 exports.getFoods = getFoods;
+const getCurrentOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    if (user) {
+        const orders = yield Order_1.Order.find({ vendorId: user._id }).populate("items.food");
+        if (orders != null) {
+            return res.status(200).json(orders);
+        }
+    }
+    return res.status(400).json({ msg: "Order not found" });
+});
+exports.getCurrentOrders = getCurrentOrders;
+const getOrdersDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { orderId } = req.params;
+    if (orderId) {
+        const order = (yield Order_1.Order.findById(orderId)).populate("items.food");
+        if (order != null) {
+            return res.status(200).json(order);
+        }
+    }
+    return res.status(400).json({ msg: "Order not found" });
+});
+exports.getOrdersDetails = getOrdersDetails;
+const processOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const { status, remarks, time } = req.body;
+    if (id) {
+        const order = yield Order_1.Order.findById(id).populate("foods");
+        order.orderStatus = status;
+        order.remarks = remarks;
+        if (time) {
+            order.readyTime = time;
+        }
+        const savedOrder = yield order.save();
+        if (savedOrder !== null) {
+            return res.status(200).json(savedOrder);
+        }
+    }
+    return res.json({ msg: "Unable to process Order!" });
+});
+exports.processOrders = processOrders;
+const getOffers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    let currentOffers = Array();
+    if (user) {
+        const offers = yield Offer_1.Offer.find().populate("vendors");
+        if (offers) {
+            offers.map((item) => {
+                if (item.vendors) {
+                    item.vendors.map((vendor) => {
+                        if (vendor._id.toString() === user._id) {
+                            currentOffers.push(item);
+                        }
+                    });
+                }
+                if (item.offerType === "GENERIC") {
+                    currentOffers.push(item);
+                }
+            });
+        }
+        return res.status(200).json(currentOffers);
+    }
+    return res.status(400).json({ msg: "Offers not available" });
+});
+exports.getOffers = getOffers;
+const createOffer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    if (user) {
+        const { offerType, title, description, minValue, offerAmount, startValidity, endValidity, promocode, promoType, bank, bins, pincode, isActive, } = req.body;
+        const vendor = yield (0, admin_controller_1.FindVendor)(user._id);
+        console.log({ vendor });
+        if (vendor) {
+            const offer = yield Offer_1.Offer.create({
+                offerType,
+                title,
+                description,
+                minValue,
+                offerAmount,
+                startValidity,
+                endValidity,
+                promocode,
+                promoType,
+                bank,
+                bins,
+                pincode,
+                isActive,
+                vendors: [vendor],
+            });
+            return res.status(200).json(offer);
+        }
+    }
+    return res.status(400).json({ msg: "Error with adding new offer" });
+});
+exports.createOffer = createOffer;
+const updateOffer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const { id } = req.params;
+    if (user) {
+        const { offerType, title, description, minValue, offerAmount, startValidity, endValidity, promocode, promoType, bank, bins, pincode, isActive, } = req.body;
+        const currentOffer = yield Offer_1.Offer.findById(id);
+        if (currentOffer) {
+            const vendor = yield (0, admin_controller_1.FindVendor)(user._id);
+            if (vendor) {
+                (currentOffer.offerType = offerType),
+                    (currentOffer.title = title),
+                    (currentOffer.description = description),
+                    (currentOffer.minValue = minValue),
+                    (currentOffer.offerAmount = offerAmount),
+                    (currentOffer.startValidity = startValidity),
+                    (currentOffer.endValidity = endValidity),
+                    (currentOffer.promocode = promocode),
+                    (currentOffer.promoType = promoType),
+                    (currentOffer.bank = bank),
+                    (currentOffer.bins = bins),
+                    (currentOffer.pincode = pincode),
+                    (currentOffer.isActive = isActive);
+                const updatedOffer = yield currentOffer.save();
+                return res.status(200).json(updatedOffer);
+            }
+        }
+    }
+    return res.status(400).json({ msg: "Error with adding new offer" });
+});
+exports.updateOffer = updateOffer;
 //# sourceMappingURL=vendor.controller.js.map

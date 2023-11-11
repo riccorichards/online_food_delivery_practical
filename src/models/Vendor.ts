@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface VendorDoc extends Document {
+export interface VendorDoc extends Document {
   name: string;
   ownerName: string;
   password: string;
   pincode: string;
   address: string;
+  status: string;
   email: string;
   phone: string;
   foodType: [string];
@@ -25,6 +26,7 @@ const VendorSchema = new Schema(
     foodType: { type: [String] },
     pincode: { type: String, required: true },
     address: { type: String },
+    status: { type: String },
     phone: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
@@ -32,8 +34,8 @@ const VendorSchema = new Schema(
     serviceAvailable: { type: Boolean, required: true },
     rating: { type: String, required: true },
     foods: [{ type: mongoose.SchemaTypes.ObjectId, ref: "food" }],
-    lat: {type: Number},
-    lng: {type: Number},
+    lat: { type: Number },
+    lng: { type: Number },
   },
   {
     toJSON: {

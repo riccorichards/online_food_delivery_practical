@@ -1,2 +1,5 @@
 node_modules
 .env
+private-key.pem
+public-key.pem
+able-bazaar-404713-834ab6375e83.json

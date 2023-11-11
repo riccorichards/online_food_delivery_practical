@@ -7,9 +7,14 @@ import {
 import { FindVendor } from "./admin.controller";
 import { generateSignature, validPassword } from "../utility";
 import { CreateFoodInput } from "../dto/Food.dto";
-import { Food } from "../models";
+import { Food, Vendor } from "../models";
 import { Order } from "../models/Order";
 import { Offer } from "../models/Offer";
+import { v4 as uuidv4 } from "uuid";
+import {
+  getPublicUrlForFile,
+  uploadFileToGoogleCloud,
+} from "../services/Storage.service";
 
 export const vendorLogin = async (req: Request, res: Response) => {
   const { email, password } = <VendorLoginInput>req.body;
@@ -22,12 +27,11 @@ export const vendorLogin = async (req: Request, res: Response) => {
     if (validUser) {
       const signature = generateSignature({
         _id: existingVendo._id,
-        email: existingVendo.email,
-        password: existingVendo.password,
-        name: existingVendo.name,
-        ownerName: existingVendo.ownerName,
+        status: existingVendo.status,
       });
-      return res.status(200).json(signature);
+      return res
+        .status(200)
+        .json({ signature: signature, status: existingVendo.status });
     } else {
       return res.status(403).json({ msg: "Wrong credentials" });
     }
@@ -73,7 +77,7 @@ export const updateVendorProfile = async (req: Request, res: Response) => {
 export const updateVendomCoverImage = async (req: Request, res: Response) => {
   const user = req.user;
 
-  const { name, desc, cat, foodType, readyTime, price } = <CreateFoodInput>(
+  const { name, desc, images, foodType, readyTime, price } = <CreateFoodInput>(
     req.body
   );
 
@@ -117,35 +121,43 @@ export const updateVendorService = async (req: Request, res: Response) => {
 
 export const addFood = async (req: Request, res: Response) => {
   const user = req.user;
+  const { name, desc, foodType, readyTime, price } = <CreateFoodInput>req.body;
 
-  const { name, desc, cat, foodType, readyTime, price } = <CreateFoodInput>(
-    req.body
-  );
   if (user) {
-    const vendor = await FindVendor(user._id);
+    try {
+      const file = req.file;
+      const { originalname, buffer, mimetype } = file;
+      const imageUniqueName = `${uuidv4()}-${originalname}`;
 
-    if (vendor !== null) {
-      const files = req.files as [Express.Multer.File];
-      const images = files.map((file: Express.Multer.File) => file.filename);
-
-      const food = await Food.create({
-        vendorId: vendor._id,
-        name: name,
-        description: desc,
-        category: cat,
-        price: price,
-        rating: 0,
-        readyTime: readyTime,
-        foodType: foodType,
-        images: images,
+      uploadFileToGoogleCloud({
+        buffer,
+        mimetype,
+        originalname: imageUniqueName,
       });
+      const vendor = await FindVendor(user._id);
 
-      vendor.foods.push(food);
-      const savedVendor = await vendor.save();
-      return res.json(savedVendor);
+      if (vendor !== null) {
+        const food = await Food.create({
+          vendorId: vendor._id,
+          name: name,
+          description: desc,
+          price: price,
+          rating: 0,
+          readyTime: readyTime,
+          foodType: foodType.split(", "),
+          images: imageUniqueName,
+        });
+
+        vendor.foods.push(food);
+        const savedVendor = await vendor.save();
+        return res.json(savedVendor);
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error in adding food" });
     }
   }
-  return res.json({ message: "Unable to Update vendor profile " });
+  return res.json({ message: "Unable to Update vendor profile" });
 };
 
 export const getFoods = async (req: Request, res: Response) => {
@@ -155,9 +167,17 @@ export const getFoods = async (req: Request, res: Response) => {
     const foods = await Food.find({ vendorId: user._id });
 
     if (foods !== null) {
-      return res.json(foods);
+      const foodsWithImagesUrl = await Promise.all(
+        foods.map(async (food) => {
+          const imageUrl = await getPublicUrlForFile(food.images);
+          food.images = imageUrl;
+          return food;
+        })
+      );
+      return res.json(foodsWithImagesUrl);
     }
   }
+
   return res.json({ message: "Foods not found!" });
 };
 
@@ -185,7 +205,6 @@ export const getOrdersDetails = async (req: Request, res: Response) => {
   }
   return res.status(400).json({ msg: "Order not found" });
 };
-
 export const processOrders = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status, remarks, time } = req.body;
@@ -208,7 +227,6 @@ export const processOrders = async (req: Request, res: Response) => {
 
   return res.json({ msg: "Unable to process Order!" });
 };
-
 export const getOffers = async (req: Request, res: Response) => {
   const user = req.user;
   let currentOffers = Array();
@@ -235,7 +253,6 @@ export const getOffers = async (req: Request, res: Response) => {
   }
   return res.status(400).json({ msg: "Offers not available" });
 };
-
 export const createOffer = async (req: Request, res: Response) => {
   const user = req.user;
   if (user) {
@@ -256,7 +273,6 @@ export const createOffer = async (req: Request, res: Response) => {
     } = <CreateOfferInput>req.body;
 
     const vendor = await FindVendor(user._id);
-    console.log({ vendor });
     if (vendor) {
       const offer = await Offer.create({
         offerType,

@@ -23,23 +23,23 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Vendor = void 0;
+exports.DeliveryUser = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const VendorSchema = new mongoose_1.Schema({
-    name: { type: String, required: true },
-    ownerName: { type: String, required: true },
-    foodType: { type: [String] },
-    pincode: { type: String, required: true },
-    address: { type: String },
-    phone: { type: String, required: true },
+const DeliveryUserSchema = new mongoose_1.Schema({
     email: { type: String, required: true },
     password: { type: String, required: true },
     salt: { type: String, required: true },
-    serviceAvailable: { type: Boolean, required: true },
-    rating: { type: String, required: true },
-    foods: [{ type: mongoose_1.default.SchemaTypes.ObjectId, ref: "food" }],
+    firstName: { type: String },
+    lastName: { type: String },
+    address: { type: String },
+    phone: { type: String, required: true },
+    pincode: { type: String },
+    verified: { type: Boolean },
+    otp: { type: Number },
+    otp_expiry: { type: Date },
     lat: { type: Number },
     lng: { type: Number },
+    isAvailable: { type: Boolean, default: false },
 }, {
     toJSON: {
         transform(doc, ret) {
@@ -52,6 +52,6 @@ const VendorSchema = new mongoose_1.Schema({
     },
     timestamps: true,
 });
-const Vendor = mongoose_1.default.model("Vendor", VendorSchema);
-exports.Vendor = Vendor;
-//# sourceMappingURL=Vendor.js.map
+const DeliveryUser = mongoose_1.default.model("deliveryUser", DeliveryUserSchema);
+exports.DeliveryUser = DeliveryUser;
+//# sourceMappingURL=delivery.js.map

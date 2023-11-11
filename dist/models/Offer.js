@@ -23,28 +23,26 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Vendor = void 0;
+exports.Offer = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const VendorSchema = new mongoose_1.Schema({
-    name: { type: String, required: true },
-    ownerName: { type: String, required: true },
-    foodType: { type: [String] },
-    pincode: { type: String, required: true },
-    address: { type: String },
-    phone: { type: String, required: true },
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    salt: { type: String, required: true },
-    serviceAvailable: { type: Boolean, required: true },
-    rating: { type: String, required: true },
-    foods: [{ type: mongoose_1.default.SchemaTypes.ObjectId, ref: "food" }],
-    lat: { type: Number },
-    lng: { type: Number },
+const OfferSchema = new mongoose_1.Schema({
+    offerType: { type: String, require: true },
+    vendors: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Vendor" }],
+    title: { type: String, require: true },
+    description: { type: String },
+    minValue: { type: Number, require: true },
+    offerAmount: { type: Number, require: true },
+    startValidity: Date,
+    endValidity: Date,
+    promocode: { type: String, require: true },
+    promoType: { type: String, require: true },
+    bank: [{ type: String }],
+    bins: [{ type: Number }],
+    pincode: { type: String, require: true },
+    isActive: Boolean,
 }, {
     toJSON: {
         transform(doc, ret) {
-            delete ret.password;
-            delete ret.salt;
             delete ret.__v;
             delete ret.createdAt;
             delete ret.updatedAt;
@@ -52,6 +50,6 @@ const VendorSchema = new mongoose_1.Schema({
     },
     timestamps: true,
 });
-const Vendor = mongoose_1.default.model("Vendor", VendorSchema);
-exports.Vendor = Vendor;
-//# sourceMappingURL=Vendor.js.map
+const Offer = mongoose_1.default.model("Offer", OfferSchema);
+exports.Offer = Offer;
+//# sourceMappingURL=Offer.js.map

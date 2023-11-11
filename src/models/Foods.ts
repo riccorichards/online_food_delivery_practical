@@ -4,12 +4,11 @@ export interface FoodDoc extends Document {
   vendorId: string;
   name: string;
   description: string;
-  category: string;
   foodType: [string];
-  readyTime: number;
-  price: number;
+  readyTime: string;
+  price: string;
   rating: number;
-  //images: [string];
+  images: string;
 }
 
 const FoodSchema = new Schema(
@@ -17,12 +16,11 @@ const FoodSchema = new Schema(
     vendorId: { type: String, required: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
-    category: { type: String },
     foodType: { type: [String], required: true },
-    readyTime: { type: Number },
-    price: { type: Number },
+    readyTime: { type: String },
+    price: { type: String },
     rating: { type: Number },
-    //images: { type: [String] },
+    images: { type: String },
   },
   {
     toJSON: {

@@ -27,4 +27,10 @@ router.patch("/service", controllers_1.updateVendorService);
 router.patch("/coverImage", images, controllers_1.updateVendomCoverImage);
 router.post("/food", images, controllers_1.addFood);
 router.get("/foods", controllers_1.getFoods);
+router.get("/orders", controllers_1.getCurrentOrders);
+router.put("/order/:id/process", controllers_1.processOrders);
+router.get("/orders/:orderId", controllers_1.getOrdersDetails);
+router.get("/offers", controllers_1.getOffers);
+router.post("/offer", controllers_1.createOffer);
+router.put("/offer/:id", controllers_1.updateOffer);
 //# sourceMappingURL=Vendor.route.js.map

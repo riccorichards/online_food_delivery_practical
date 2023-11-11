@@ -16,19 +16,12 @@ import {
 } from "../controllers";
 import { authenticate } from "../middlewares";
 import multer from "multer";
+import { uploadFileToGoogleCloud } from "../services/Storage.service";
 
 const router = express.Router();
 
-const imageStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "images");
-  },
-  filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + "_" + file.originalname);
-  },
-});
-
-const images = multer({ storage: imageStorage }).array("images", 10);
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 router.post("/login", vendorLogin);
 
@@ -36,9 +29,9 @@ router.use(authenticate);
 router.get("/profile", getVendorProfile);
 router.patch("/profile", updateVendorProfile);
 router.patch("/service", updateVendorService);
-router.patch("/coverImage", images, updateVendomCoverImage);
+router.patch("/coverImage", upload.single("image"), updateVendomCoverImage);
 
-router.post("/food", images, addFood);
+router.post("/food", upload.single("image"), addFood);
 router.get("/foods", getFoods);
 
 router.get("/orders", getCurrentOrders);

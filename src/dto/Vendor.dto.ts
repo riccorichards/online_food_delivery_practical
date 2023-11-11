@@ -1,12 +1,14 @@
 export interface CreateVendorInput {
   name: string;
   ownerName: string;
-  foodType: [string];
+  foodType: string;
   pincode: string;
   address: string;
   phone: string;
   email: string;
   password: string;
+  lat: string;
+  lng: string;
 }
 
 export interface VendorLoginInput {
@@ -16,10 +18,7 @@ export interface VendorLoginInput {
 
 export interface VendorPayload {
   _id: string;
-  email: string;
-  password: string;
-  name: string;
-  ownerName: string;
+  status: string;
 }
 
 export interface EditVendorInput {

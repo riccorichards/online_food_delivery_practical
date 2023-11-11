@@ -23,28 +23,27 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Vendor = void 0;
+exports.Order = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const VendorSchema = new mongoose_1.Schema({
-    name: { type: String, required: true },
-    ownerName: { type: String, required: true },
-    foodType: { type: [String] },
-    pincode: { type: String, required: true },
-    address: { type: String },
-    phone: { type: String, required: true },
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    salt: { type: String, required: true },
-    serviceAvailable: { type: Boolean, required: true },
-    rating: { type: String, required: true },
-    foods: [{ type: mongoose_1.default.SchemaTypes.ObjectId, ref: "food" }],
-    lat: { type: Number },
-    lng: { type: Number },
+const OrderSchema = new mongoose_1.Schema({
+    orderId: { type: String, require: true },
+    vendorId: { type: String, require: true },
+    items: [
+        {
+            food: { type: mongoose_1.Schema.Types.ObjectId, ref: "food", require: true },
+            unit: { type: Number, require: true },
+        },
+    ],
+    totalAmount: { type: Number, require: true },
+    paidAmount: { type: Number, require: true },
+    orderDate: { type: Date },
+    orderStatus: { type: String },
+    remarks: { type: String },
+    deliveryId: { type: String },
+    readyTime: { type: Number },
 }, {
     toJSON: {
         transform(doc, ret) {
-            delete ret.password;
-            delete ret.salt;
             delete ret.__v;
             delete ret.createdAt;
             delete ret.updatedAt;
@@ -52,6 +51,6 @@ const VendorSchema = new mongoose_1.Schema({
     },
     timestamps: true,
 });
-const Vendor = mongoose_1.default.model("Vendor", VendorSchema);
-exports.Vendor = Vendor;
-//# sourceMappingURL=Vendor.js.map
+const Order = mongoose_1.default.model("orders", OrderSchema);
+exports.Order = Order;
+//# sourceMappingURL=Order.js.map

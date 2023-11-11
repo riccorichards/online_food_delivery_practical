@@ -19,20 +19,27 @@ export const getFoodAvailability = async (req: Request, res: Response) => {
 };
 
 export const getTopRestaurant = async (req: Request, res: Response) => {
-  const pincode = req.params.pincode;
   const result = await Vendor.find({
-    pincode: pincode,
     serviceAvailable: false,
   })
     .sort([["rating", "descending"]])
-    .limit(1);
+    .limit(5);
 
   if (result.length > 0) {
-    return res.status(200).json(result);
+    const vendorsBasedOnRating = result.map((vendor) => {
+      return {
+        name: vendor.name,
+        rating: vendor.rating,
+        _id: vendor._id,
+      };
+    });
+
+    return res.status(200).json(vendorsBasedOnRating);
   }
 
   return res.status(400).json({ msg: "Data Not Found" });
 };
+
 export const getFoodIn30Min = async (req: Request, res: Response) => {
   const pincode = req.params.pincode;
   const result = await Vendor.find({
@@ -46,7 +53,9 @@ export const getFoodIn30Min = async (req: Request, res: Response) => {
     result.map((vendor) => {
       const vendors = vendor.foods as [FoodDoc];
 
-      foodResult.push(...vendors.filter((food) => food.readyTime >= 30));
+      foodResult.push(
+        ...vendors.filter((food) => parseFloat(food.readyTime) >= 30)
+      );
     });
 
     return res.status(200).json(foodResult);
@@ -66,7 +75,7 @@ export const searchFoods = async (req: Request, res: Response) => {
   return res.status(400).json({ msg: "Data Not Found" });
 };
 export const getRestaurantById = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const result = await Vendor.findById(id).populate("foods");
 
   if (result) {
@@ -77,7 +86,6 @@ export const getRestaurantById = async (req: Request, res: Response) => {
 
 export const findAvailableOffers = async (req: Request, res: Response) => {
   const { pincode } = req.params;
-  console.log({ pincode });
   const offers = await Offer.find({ pincode: pincode, isActive: true });
   if (offers) {
     return res.status(200).json(offers);

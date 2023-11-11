@@ -16,6 +16,8 @@
   "author": "Riccorichards",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^7.6.0",
+    "aws-sdk": "^2.1490.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
@@ -25,14 +27,16 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.3",
     "multer": "^1.4.5-lts.1",
-    "twilio": "^4.19.0"
+    "twilio": "^4.19.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.1",
     "@types/cors": "^2.8.15",
     "@types/express": "^4.17.20",
-    "@types/bcrypt": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.4",
     "@types/multer": "^1.4.9",
+    "@types/uuid": "^9.0.6",
     "nodemon": "^3.0.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.2.2"
