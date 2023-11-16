@@ -77,10 +77,6 @@ export const updateVendorProfile = async (req: Request, res: Response) => {
 export const updateVendomCoverImage = async (req: Request, res: Response) => {
   const user = req.user;
 
-  const { name, desc, images, foodType, readyTime, price } = <CreateFoodInput>(
-    req.body
-  );
-
   if (user) {
     const vendor = await FindVendor(user._id);
 
@@ -177,7 +173,6 @@ export const getFoods = async (req: Request, res: Response) => {
       return res.json(foodsWithImagesUrl);
     }
   }
-
   return res.json({ message: "Foods not found!" });
 };
 

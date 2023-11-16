@@ -36,7 +36,7 @@ export const getPublicUrlForFile = async (
   const options: GetSignedUrlConfig = {
     version: "v4",
     action: "read",
-    expires: Date.now() + 1000 * 60 * 15,
+    expires: Date.now() + 1000 * 60 * 24 * 5,
   };
   try {
     const [url] = await bucket.file(fileName).getSignedUrl(options);

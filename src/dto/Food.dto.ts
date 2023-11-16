@@ -17,3 +17,11 @@ export interface CreateFoodInput {
   readyTime: string;
   price: string;
 }
+
+export interface FilterFoodType {
+  vendor: string | null;
+  cuisines: string | null;
+  duration: string | null;
+  reset: string | null;
+}
+

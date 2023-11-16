@@ -154,7 +154,6 @@ export const requestOtp = async (req: Request, res: Response) => {
   }
   return res.status(400).json({ err: "Error with Request OTp" });
 };
-
 export const getCustomerProfile = async (req: Request, res: Response) => {
   const customer = req.user;
   if (customer) {
@@ -194,7 +193,6 @@ export const editCustomerProfile = async (req: Request, res: Response) => {
 
   return res.status(400).json({ msg: "Error with Edit User" });
 };
-
 export const createPayment = async (req: Request, res: Response) => {
   const customer = req.user;
   const { amount, paymentMode, offerId } = req.body;
@@ -222,7 +220,6 @@ export const createPayment = async (req: Request, res: Response) => {
 
   return res.status(200).json(transaction);
 };
-
 export const assignOrderForDelivery = async (
   orderId: string,
   vendorId: string
@@ -250,7 +247,6 @@ export const assignOrderForDelivery = async (
     }
   }
 };
-
 const validateTransaction = async (txnId: string) => {
   const currentTransaction = await Transaction.findById(txnId);
   if (currentTransaction.status.toLowerCase() !== "failed") {
@@ -259,7 +255,6 @@ const validateTransaction = async (txnId: string) => {
 
   return { status: false, currentTransaction };
 };
-
 export const createOrder = async (req: Request, res: Response) => {
   const customer = req.user;
 
@@ -325,7 +320,6 @@ export const createOrder = async (req: Request, res: Response) => {
   }
   return res.status(400).json({ msg: "Error with creating Order" });
 };
-
 export const getOrders = async (req: Request, res: Response) => {
   const customer = req.user;
 
@@ -341,7 +335,6 @@ export const getOrders = async (req: Request, res: Response) => {
 
   return res.status(400).json("Error with fetching orders");
 };
-
 export const getOrderById = async (req: Request, res: Response) => {
   const orderId = req.params.orderId;
 
@@ -353,7 +346,6 @@ export const getOrderById = async (req: Request, res: Response) => {
 
   return res.status(400).json("Error with fetching orders");
 };
-
 export const addToCart = async (req: Request, res: Response) => {
   const customer = req.user;
 
@@ -372,13 +364,14 @@ export const addToCart = async (req: Request, res: Response) => {
 
         if (cartItem.length > 0) {
           let existingFood = cartItem.filter(
-            (el) => el.food._id.toString() === _id
+            (item) => item.food._id.toString() === _id
           );
           if (existingFood.length > 0) {
             const index = cartItem.indexOf(existingFood[0]);
             if (unit > 0) {
               cartItem[index] = { food, unit };
             } else {
+              console.log("here");
               cartItem.splice(index, 1);
             }
           } else {
@@ -399,16 +392,67 @@ export const addToCart = async (req: Request, res: Response) => {
   return res.status(400).json({ msg: "Unable to create Cart!" });
 };
 export const getCart = async (req: Request, res: Response) => {
-  const customer = req.user;
+  try {
+    const customer = req.user;
 
-  if (customer) {
-    const profile = await Customer.findById(customer._id);
-    if (profile) {
-      return res.status(200).json(profile.cart);
+    if (customer) {
+      const profile = await Customer.findById(customer._id);
+      if (profile) {
+        const { cart } = profile;
+        const modifyCart = await Promise.all(
+          cart.map(async (item) => {
+            const food = await Food.findById(item.food);
+            return {
+              food: food,
+              unit: item.unit,
+              _id: item._id,
+            };
+          })
+        );
+        return res.status(200).json(modifyCart);
+      }
     }
+  } catch (error) {
+    console.log({ err: error.message });
+    return res.status(400).json({ msg: "Cart is Empty" });
   }
+};
+export const deleteFoodFromCart = async (req: Request, res: Response) => {
+  try {
+    const { foodId } = req.params;
+    const customer = req.user;
+    if (customer) {
+      const profile = await Customer.findById(customer._id);
+      let cartItem = Array();
+      if (profile) {
+        cartItem = profile.cart;
 
-  return res.status(400).json({ msg: "Cart is Empty" });
+        cartItem = cartItem.filter(
+          (food) => food.food.toString() !== foodId.toString()
+        ) as [any];
+
+        if (cartItem) {
+          profile.cart = cartItem as [any];
+          await profile.save();
+
+          const { cart } = profile;
+          const modifyCart = await Promise.all(
+            cart.map(async (item) => {
+              const food = await Food.findById(item.food);
+              return {
+                food: food,
+                unit: item.unit,
+                _id: item._id,
+              };
+            })
+          );
+          return res.status(201).json(modifyCart);
+        }
+      }
+    }
+  } catch (error: any) {
+    console.log(error.message);
+  }
 };
 export const deleteCart = async (req: Request, res: Response) => {
   const customer = req.user;
@@ -424,7 +468,6 @@ export const deleteCart = async (req: Request, res: Response) => {
 
   return res.status(400).json({ msg: "Cart is Empty" });
 };
-
 export const verifyOffer = async (req: Request, res: Response) => {
   const { id } = req.params;
 

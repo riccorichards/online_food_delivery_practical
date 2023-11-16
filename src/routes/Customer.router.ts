@@ -7,6 +7,7 @@ import {
   customerSignUp,
   customerVerify,
   deleteCart,
+  deleteFoodFromCart,
   editCustomerProfile,
   getCart,
   getCustomerProfile,
@@ -34,6 +35,7 @@ router.get("/order/:orderId", getOrderById);
 router.post("/cart", addToCart);
 router.get("/cart", getCart);
 router.delete("/cart", deleteCart);
+router.delete("/cart/:foodId", deleteFoodFromCart);
 
 router.get("/offer/verify/:id", verifyOffer);
 

@@ -36,16 +36,14 @@ export interface CustomerPayload {
 }
 
 export class CartItem {
-  _id: string;
 
+  _id: string;
   unit: number;
 }
 
 export class OrderInput {
   txnId: string;
-
   amount: string;
-
   items: [CartItem];
 }
 
