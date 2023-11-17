@@ -2,7 +2,7 @@
   "name": "onlinefood",
   "version": "1.0.0",
   "description": "Online order delivery backend application",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
     "start": "node dist/index.js",
