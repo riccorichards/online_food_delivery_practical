@@ -11,14 +11,5 @@
       "src": "/(.*)",
       "dest": "/dist/$1"
     }
-  ],
-  "env": {
-    "TWILIO_ACCESS_SID": "@twilio_access_sid",
-    "TWILIO_AUTH_TOKEN": "@twilio_auth_token",
-    "PRIVATE_KEY": "@private_key",
-    "PUBLIC_KEY": "@public_key",
-    "GCS_BUCKET_NAME": "@gcs_bucket_name",
-    "GCS_KEY_FILE_NAME": "@gcs_key_file_name",
-    "MONGODB_URL": "@mongodb_url"
-  }
+  ]
 }
