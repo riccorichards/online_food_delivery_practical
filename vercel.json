@@ -1,12 +1,1 @@
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "directoryListing": true
-}
+{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
