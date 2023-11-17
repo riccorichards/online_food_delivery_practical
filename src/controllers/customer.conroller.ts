@@ -22,6 +22,7 @@ import { Offer } from "../models/Offer";
 import { Transaction } from "../models/transaction";
 import { FindVendor } from "./admin.controller";
 import { DeliveryUser } from "../models/delivery";
+import { getPublicUrlForFile } from "../services/Storage.service";
 
 export const customerSignUp = async (req: Request, res: Response) => {
   const customerInputs = plainToClass(CreateCustomerInputs, req.body);
@@ -402,6 +403,9 @@ export const getCart = async (req: Request, res: Response) => {
         const modifyCart = await Promise.all(
           cart.map(async (item) => {
             const food = await Food.findById(item.food);
+            if (!food) return null;
+            const imageUrl = await getPublicUrlForFile(food.images);
+            food.images = imageUrl;
             return {
               food: food,
               unit: item.unit,
@@ -462,7 +466,7 @@ export const deleteCart = async (req: Request, res: Response) => {
     if (profile != null) {
       profile.cart = [] as any;
       const savedCart = await profile.save();
-      return res.status(200).json(savedCart);
+      return res.status(200).json(savedCart.cart);
     }
   }
 

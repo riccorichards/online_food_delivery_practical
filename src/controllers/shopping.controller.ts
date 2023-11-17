@@ -24,11 +24,6 @@ interface QueryType {
   readyTime?: QueryDurationType | null;
 }
 
-interface SearchQueryType {
-  name?: string | null;
-  foodType?: QueryCuisinesType | null;
-}
-
 export const getFilteredFood = async (req: Request, res: Response) => {
   const { vendor, duration, cuisines, reset } =
     req.query as unknown as FilterFoodType;
@@ -56,16 +51,17 @@ export const getFilteredFood = async (req: Request, res: Response) => {
 
   const foods = await Food.find(query);
 
-  return res.status(200).json(foods);
-  //if (foods !== null) {
-  //  const foodsWithImagesUrl = await Promise.all(
-  //    foods.map(async (food) => {
-  //      const imageUrl = await getPublicUrlForFile(food.images);
-  //      food.images = imageUrl;
-  //      return food;
-  //    })
-  //  );
-  //}
+  if (foods !== null) {
+    console.log({ foods });
+    const foodsWithImagesUrl = await Promise.all(
+      foods.map(async (food) => {
+        const imageUrl = await getPublicUrlForFile(food.images);
+        food.images = imageUrl;
+        return food;
+      })
+    );
+    return res.status(200).json(foodsWithImagesUrl);
+  }
 };
 export const getTopRestaurant = async (req: Request, res: Response) => {
   const result = await Vendor.find({
@@ -142,7 +138,16 @@ export const getAllFoods = async (req: Request, res: Response) => {
   try {
     const foods = await Food.find({}).lean();
     if (!foods) return null;
-
-    return res.status(200).json(foods);
-  } catch (error) {}
+    const foodsWithImagesUrl = await Promise.all(
+      foods.map(async (food) => {
+        const imageUrl = await getPublicUrlForFile(food.images);
+        food.images = imageUrl;
+        return food;
+      })
+    );
+    return res.status(200).json(foodsWithImagesUrl);
+  } catch (error: any) {
+    console.log(error.message);
+    return res.status(400).json({ msg: "Offers Nof Found" });
+  }
 };
