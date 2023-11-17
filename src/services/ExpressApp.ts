@@ -13,7 +13,7 @@ export default (app: Application) => {
   app.use(express.urlencoded({ extended: true }));
   app.use(
     cors({
-      origin: "https://demo-online-delivery.vercel.app",
+      origin: "https://demo-online-food-delivery-client.vercel.app",
       credentials: true,
     })
   );
