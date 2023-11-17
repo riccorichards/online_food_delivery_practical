@@ -15,6 +15,7 @@ export default (app: Application) => {
     cors({
       origin: "https://demo-online-food-delivery-client.vercel.app",
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE']
     })
   );
   app.use("/admin", AdminRouter);
