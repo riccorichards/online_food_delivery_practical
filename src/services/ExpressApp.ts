@@ -18,7 +18,6 @@ export default (app: Application) => {
       methods: ["post", "get", "put", "delete"],
     })
   );
-
   app.get("/check-healthy", async (req, res) => {
     return res.status(200).json("Hello");
   });
