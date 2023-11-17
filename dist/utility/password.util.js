@@ -15,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateSignature = exports.generateSignature = exports.validPassword = exports.passwordGenerator = exports.saltGenerator = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const config_1 = require("../config");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const saltGenerator = (n) => {
     return bcrypt_1.default.genSalt(n);
 };
@@ -28,14 +29,16 @@ const validPassword = (enteredPass, existPass) => __awaiter(void 0, void 0, void
     return yield bcrypt_1.default.compare(existPass, enteredPass);
 });
 exports.validPassword = validPassword;
+const privateKey = Buffer.from(process.env["PRIVATE_KEY"], "base64").toString("ascii");
 const generateSignature = (payload) => {
-    return jsonwebtoken_1.default.sign(payload, config_1.JWT_PRIVATE_KEY, { expiresIn: "1d" });
+    return jsonwebtoken_1.default.sign(payload, privateKey, { expiresIn: "1d", algorithm: "RS256" });
 };
 exports.generateSignature = generateSignature;
+const publicKey = Buffer.from(process.env["PUBLIC_KEY"], "base64").toString("ascii");
 const validateSignature = (req) => {
     const signature = req.get("Authorization");
     if (signature) {
-        const payload = jsonwebtoken_1.default.verify(signature.split(" ")[1], config_1.JWT_PRIVATE_KEY);
+        const payload = jsonwebtoken_1.default.verify(signature.split(" ")[1], publicKey);
         return payload;
     }
     return undefined;

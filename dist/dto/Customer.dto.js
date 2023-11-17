@@ -19,7 +19,7 @@ __decorate([
     __metadata("design:type", String)
 ], CreateCustomerInputs.prototype, "email", void 0);
 __decorate([
-    (0, class_validator_1.Length)(7, 12),
+    (0, class_validator_1.Length)(7, 15),
     __metadata("design:type", String)
 ], CreateCustomerInputs.prototype, "phone", void 0);
 __decorate([

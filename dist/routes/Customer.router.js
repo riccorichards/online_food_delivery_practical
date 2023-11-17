@@ -22,6 +22,7 @@ router.get("/order/:orderId", controllers_1.getOrderById);
 router.post("/cart", controllers_1.addToCart);
 router.get("/cart", controllers_1.getCart);
 router.delete("/cart", controllers_1.deleteCart);
+router.delete("/cart/:foodId", controllers_1.deleteFoodFromCart);
 router.get("/offer/verify/:id", controllers_1.verifyOffer);
 router.post("/create-payment", controllers_1.createPayment);
 //# sourceMappingURL=Customer.router.js.map

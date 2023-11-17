@@ -15,6 +15,8 @@ const utility_1 = require("../utility");
 const models_1 = require("../models");
 const Order_1 = require("../models/Order");
 const Offer_1 = require("../models/Offer");
+const uuid_1 = require("uuid");
+const Storage_service_1 = require("../services/Storage.service");
 const vendorLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     const existingVendo = yield (0, admin_controller_1.FindVendor)("", email);
@@ -23,12 +25,11 @@ const vendorLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (validUser) {
             const signature = (0, utility_1.generateSignature)({
                 _id: existingVendo._id,
-                email: existingVendo.email,
-                password: existingVendo.password,
-                name: existingVendo.name,
-                ownerName: existingVendo.ownerName,
+                status: existingVendo.status,
             });
-            return res.status(200).json(signature);
+            return res
+                .status(200)
+                .json({ signature: signature, status: existingVendo.status });
         }
         else {
             return res.status(403).json({ msg: "Wrong credentials" });
@@ -75,7 +76,6 @@ const updateVendorProfile = (req, res) => __awaiter(void 0, void 0, void 0, func
 exports.updateVendorProfile = updateVendorProfile;
 const updateVendomCoverImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const { name, desc, cat, foodType, readyTime, price } = (req.body);
     if (user) {
         const vendor = yield (0, admin_controller_1.FindVendor)(user._id);
         if (vendor !== null) {
@@ -114,29 +114,40 @@ const updateVendorService = (req, res) => __awaiter(void 0, void 0, void 0, func
 exports.updateVendorService = updateVendorService;
 const addFood = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const { name, desc, cat, foodType, readyTime, price } = (req.body);
+    const { name, desc, foodType, readyTime, price } = req.body;
     if (user) {
-        const vendor = yield (0, admin_controller_1.FindVendor)(user._id);
-        if (vendor !== null) {
-            const files = req.files;
-            const images = files.map((file) => file.filename);
-            const food = yield models_1.Food.create({
-                vendorId: vendor._id,
-                name: name,
-                description: desc,
-                category: cat,
-                price: price,
-                rating: 0,
-                readyTime: readyTime,
-                foodType: foodType,
-                images: images,
+        try {
+            const file = req.file;
+            const { originalname, buffer, mimetype } = file;
+            const imageUniqueName = `${(0, uuid_1.v4)()}-${originalname}`;
+            (0, Storage_service_1.uploadFileToGoogleCloud)({
+                buffer,
+                mimetype,
+                originalname: imageUniqueName,
             });
-            vendor.foods.push(food);
-            const savedVendor = yield vendor.save();
-            return res.json(savedVendor);
+            const vendor = yield (0, admin_controller_1.FindVendor)(user._id);
+            if (vendor !== null) {
+                const food = yield models_1.Food.create({
+                    vendorId: vendor._id,
+                    name: name,
+                    description: desc,
+                    price: price,
+                    rating: 0,
+                    readyTime: readyTime,
+                    foodType: foodType.split(", "),
+                    images: imageUniqueName,
+                });
+                vendor.foods.push(food);
+                const savedVendor = yield vendor.save();
+                return res.json(savedVendor);
+            }
+        }
+        catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Error in adding food" });
         }
     }
-    return res.json({ message: "Unable to Update vendor profile " });
+    return res.json({ message: "Unable to Update vendor profile" });
 });
 exports.addFood = addFood;
 const getFoods = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -144,7 +155,12 @@ const getFoods = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (user) {
         const foods = yield models_1.Food.find({ vendorId: user._id });
         if (foods !== null) {
-            return res.json(foods);
+            const foodsWithImagesUrl = yield Promise.all(foods.map((food) => __awaiter(void 0, void 0, void 0, function* () {
+                const imageUrl = yield (0, Storage_service_1.getPublicUrlForFile)(food.images);
+                food.images = imageUrl;
+                return food;
+            })));
+            return res.json(foodsWithImagesUrl);
         }
     }
     return res.json({ message: "Foods not found!" });
@@ -219,7 +235,6 @@ const createOffer = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     if (user) {
         const { offerType, title, description, minValue, offerAmount, startValidity, endValidity, promocode, promoType, bank, bins, pincode, isActive, } = req.body;
         const vendor = yield (0, admin_controller_1.FindVendor)(user._id);
-        console.log({ vendor });
         if (vendor) {
             const offer = yield Offer_1.Offer.create({
                 offerType,

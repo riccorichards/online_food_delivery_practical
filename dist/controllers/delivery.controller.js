@@ -50,7 +50,6 @@ const deliverySignUp = (req, res) => __awaiter(void 0, void 0, void 0, function*
     if (result) {
         const signature = (0, utility_1.generateSignature)({
             _id: result._id,
-            email: result.email,
             verified: result.verified,
         });
         return res.status(201).json({
@@ -78,7 +77,6 @@ const deliveryLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (validation) {
             const signature = (0, utility_1.generateSignature)({
                 _id: deliveryUser._id,
-                email: deliveryUser.email,
                 verified: deliveryUser.verified,
             });
             return res.status(201).json({

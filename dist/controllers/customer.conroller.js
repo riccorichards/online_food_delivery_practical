@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyOffer = exports.deleteCart = exports.getCart = exports.addToCart = exports.getOrderById = exports.getOrders = exports.createOrder = exports.assignOrderForDelivery = exports.createPayment = exports.editCustomerProfile = exports.getCustomerProfile = exports.requestOtp = exports.customerVerify = exports.customerLogin = exports.customerSignUp = void 0;
+exports.verifyOffer = exports.deleteCart = exports.deleteFoodFromCart = exports.getCart = exports.addToCart = exports.getOrderById = exports.getOrders = exports.createOrder = exports.assignOrderForDelivery = exports.createPayment = exports.editCustomerProfile = exports.getCustomerProfile = exports.requestOtp = exports.customerVerify = exports.customerLogin = exports.customerSignUp = void 0;
 const class_transformer_1 = require("class-transformer");
 const Customer_dto_1 = require("../dto/Customer.dto");
 const class_validator_1 = require("class-validator");
@@ -22,6 +22,7 @@ const Offer_1 = require("../models/Offer");
 const transaction_1 = require("../models/transaction");
 const admin_controller_1 = require("./admin.controller");
 const delivery_1 = require("../models/delivery");
+const Storage_service_1 = require("../services/Storage.service");
 const customerSignUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const customerInputs = (0, class_transformer_1.plainToClass)(Customer_dto_1.CreateCustomerInputs, req.body);
     const inputErrors = yield (0, class_validator_1.validate)(customerInputs, {
@@ -51,6 +52,7 @@ const customerSignUp = (req, res) => __awaiter(void 0, void 0, void 0, function*
         lastName: "",
         address: "",
         verified: false,
+        status: "Customer",
         lat: 0,
         lng: 0,
         orders: [],
@@ -59,13 +61,12 @@ const customerSignUp = (req, res) => __awaiter(void 0, void 0, void 0, function*
         yield (0, notifications_util_1.requestOTP)(otp, phone);
         const signature = (0, utility_1.generateSignature)({
             _id: result._id,
-            email: result.email,
             verified: result.verified,
         });
         return res.status(201).json({
             signature: signature,
             verfied: result.verified,
-            email: result.email,
+            status: result.status,
             _id: result._id,
         });
     }
@@ -87,13 +88,13 @@ const customerLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (validation) {
             const signature = (0, utility_1.generateSignature)({
                 _id: customer._id,
-                email: customer.email,
                 verified: customer.verified,
             });
             return res.status(201).json({
                 signature: signature,
-                email: customer.email,
                 verified: customer.verified,
+                status: customer.status,
+                _id: customer._id,
             });
         }
     }
@@ -103,7 +104,6 @@ exports.customerLogin = customerLogin;
 const customerVerify = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { otp } = req.body;
     const customer = req.user;
-    console.log({ otp, customer });
     if (customer) {
         const profile = yield customer_1.Customer.findById(customer._id);
         if (profile) {
@@ -112,14 +112,13 @@ const customerVerify = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 const updateCustomerResponce = yield profile.save();
                 const signature = (0, utility_1.generateSignature)({
                     _id: updateCustomerResponce._id,
-                    email: updateCustomerResponce.email,
                     verified: updateCustomerResponce.verified,
                 });
                 return res.status(201).json({
                     signature: signature,
-                    verfied: updateCustomerResponce.verified,
-                    email: updateCustomerResponce.email,
+                    verified: updateCustomerResponce.verified,
                     _id: updateCustomerResponce._id,
+                    status: updateCustomerResponce.status,
                 });
             }
         }
@@ -237,6 +236,9 @@ const createOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const { txnId, amount, items } = req.body;
     if (customer) {
         const { status, currentTransaction } = yield validateTransaction(txnId);
+        if (!status) {
+            return res.status(404).json({ message: "Error while Creating Order!" });
+        }
         const orderId = `${Math.floor(Math.random() * 89999) + 1000}`;
         const profile = yield customer_1.Customer.findById(customer._id);
         let netAmount = 0.0;
@@ -250,7 +252,7 @@ const createOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             items.map(({ _id, unit }) => {
                 if (food._id == _id) {
                     vendorId = food.vendorId;
-                    netAmount += food.price * unit;
+                    netAmount += parseFloat(food.price) * unit;
                     cartItems.push({ food, unit });
                 }
             });
@@ -286,7 +288,6 @@ const getOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const customer = req.user;
     if (customer) {
         const profile = yield (yield customer_1.Customer.findById(customer._id)).populate("orders");
-        console.log({ profile, customer });
         if (profile) {
             return res.status(200).json(profile.orders);
         }
@@ -314,13 +315,14 @@ const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             if (profile != null) {
                 cartItem = profile.cart;
                 if (cartItem.length > 0) {
-                    let existingFood = cartItem.filter((el) => el.food._id.toString() === _id);
+                    let existingFood = cartItem.filter((item) => item.food._id.toString() === _id);
                     if (existingFood.length > 0) {
                         const index = cartItem.indexOf(existingFood[0]);
                         if (unit > 0) {
                             cartItem[index] = { food, unit };
                         }
                         else {
+                            console.log("here");
                             cartItem.splice(index, 1);
                         }
                     }
@@ -343,16 +345,66 @@ const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.addToCart = addToCart;
 const getCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const customer = req.user;
-    if (customer) {
-        const profile = yield customer_1.Customer.findById(customer._id);
-        if (profile) {
-            return res.status(200).json(profile.cart);
+    try {
+        const customer = req.user;
+        if (customer) {
+            const profile = yield customer_1.Customer.findById(customer._id);
+            if (profile) {
+                const { cart } = profile;
+                const modifyCart = yield Promise.all(cart.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+                    const food = yield models_1.Food.findById(item.food);
+                    if (!food)
+                        return null;
+                    const imageUrl = yield (0, Storage_service_1.getPublicUrlForFile)(food.images);
+                    food.images = imageUrl;
+                    return {
+                        food: food,
+                        unit: item.unit,
+                        _id: item._id,
+                    };
+                })));
+                return res.status(200).json(modifyCart);
+            }
         }
     }
-    return res.status(400).json({ msg: "Cart is Empty" });
+    catch (error) {
+        console.log({ err: error.message });
+        return res.status(400).json({ msg: "Cart is Empty" });
+    }
 });
 exports.getCart = getCart;
+const deleteFoodFromCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { foodId } = req.params;
+        const customer = req.user;
+        if (customer) {
+            const profile = yield customer_1.Customer.findById(customer._id);
+            let cartItem = Array();
+            if (profile) {
+                cartItem = profile.cart;
+                cartItem = cartItem.filter((food) => food.food.toString() !== foodId.toString());
+                if (cartItem) {
+                    profile.cart = cartItem;
+                    yield profile.save();
+                    const { cart } = profile;
+                    const modifyCart = yield Promise.all(cart.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+                        const food = yield models_1.Food.findById(item.food);
+                        return {
+                            food: food,
+                            unit: item.unit,
+                            _id: item._id,
+                        };
+                    })));
+                    return res.status(201).json(modifyCart);
+                }
+            }
+        }
+    }
+    catch (error) {
+        console.log(error.message);
+    }
+});
+exports.deleteFoodFromCart = deleteFoodFromCart;
 const deleteCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const customer = req.user;
     if (customer) {
@@ -360,7 +412,7 @@ const deleteCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (profile != null) {
             profile.cart = [];
             const savedCart = yield profile.save();
-            return res.status(200).json(savedCart);
+            return res.status(200).json(savedCart.cart);
         }
     }
     return res.status(400).json({ msg: "Cart is Empty" });

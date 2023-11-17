@@ -31,6 +31,7 @@ const VendorSchema = new mongoose_1.Schema({
     foodType: { type: [String] },
     pincode: { type: String, required: true },
     address: { type: String },
+    status: { type: String },
     phone: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },

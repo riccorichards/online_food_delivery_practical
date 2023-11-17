@@ -25,7 +25,7 @@ const FindVendor = (id, email) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.FindVendor = FindVendor;
 const createVendor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, ownerName, password, pincode, address, email, phone, foodType, } = req.body;
+    const { name, ownerName, password, pincode, address, email, phone, foodType, lat, lng, } = req.body;
     const existingVendor = Boolean(yield (0, exports.FindVendor)("", email));
     if (existingVendor)
         return res.status(404).json({ msg: "A vendor is already exist..." });
@@ -39,14 +39,15 @@ const createVendor = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         address,
         email,
         phone,
+        status: "Vendor",
         salt: salt,
-        foodType,
+        foodType: foodType.split(", "),
         serviceAvailable: false,
         coverImage: [],
-        rating: 0,
+        rating: 1520,
         foods: [],
-        lat: 0,
-        lng: 0,
+        lat,
+        lng,
     });
     return res.json(newVendor);
 });

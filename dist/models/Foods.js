@@ -29,12 +29,11 @@ const FoodSchema = new mongoose_1.Schema({
     vendorId: { type: String, required: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
-    category: { type: String },
     foodType: { type: [String], required: true },
     readyTime: { type: Number },
-    price: { type: Number },
+    price: { type: String },
     rating: { type: Number },
-    //images: { type: [String] },
+    images: { type: String },
 }, {
     toJSON: {
         transform(doc, ret) {

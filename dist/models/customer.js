@@ -34,13 +34,14 @@ const CustomerSchema = new mongoose_1.Schema({
     address: { type: String },
     phone: { type: String, required: true },
     verified: { type: Boolean },
+    status: { type: String },
     otp: { type: Number },
     otp_expiry: { type: Date },
     lat: { type: Number },
     lng: { type: Number },
     cart: [
         {
-            food: { type: mongoose_1.Schema.Types.ObjectId, ref: "food", require: true },
+            food: { type: mongoose_1.default.Schema.ObjectId, ref: "foods", require: true },
             unit: { type: Number, require: true },
         },
     ],
