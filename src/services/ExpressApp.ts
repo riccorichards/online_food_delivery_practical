@@ -13,15 +13,11 @@ export default (app: Application) => {
   app.use(express.urlencoded({ extended: true }));
   app.use(
     cors({
-      origin: "https://demo-online-food-delivery-client.vercel.app",
+      origin: "http://localhost:3000",
       credentials: true,
       methods: ["post", "get", "put", "delete"],
     })
   );
-  app.get("/check-healthy", async (req, res) => {
-    return res.status(200).json("Hello");
-  });
-
   app.use("/admin", AdminRouter);
   app.use("/vendor", VendorRoute);
   app.use("/customer", CustomerRouter);
